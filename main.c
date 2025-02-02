@@ -10,6 +10,7 @@ Observation: The length of the strings transferred through the pipe is variable 
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#define SIZE 1024
 
 int main(){
   pid_t pid;
@@ -25,29 +26,41 @@ int main(){
   if (pid>0){
     //PADRE
     pid = fork();
+    
       if(pid>0){
 	//Padre
       } else if(pid==0){
 	//Figlio 2
 	printf("Ciao! Sono figlio 2:\n");
-	 close(fd[1]);
-     printf("Leggo da figlio 1:\n");
-    while(read(fd[0], &c, sizeof(char))>0){
-      printf("%c", toupper(c));
+        close(fd[1]);
+	printf("Leggo da figlio 1:\n");
+	while(read(fd[0], &c, sizeof(char))>0){
+	  printf("%c", toupper(c));
 	    }
     close(fd[0]);
     exit(0);
       }
+      
     wait(NULL);
     wait(NULL);
+    
   } else if(pid==0){
     //FIGLIO 1
     //Leggere righe da stdin e mandarle al padre
     //Chiudo la lettura, perché scrivo;
+    char tempBuffer[SIZE];
+    int len;
     printf("Ciao, sono figlio 1 e scrivo:\n");
     close(fd[0]);
-    while(read(0, &c, sizeof(char))>0){
-      write(fd[1], &c, sizeof(char));
+    while(fgets(tempBuffer, SIZE, stdin)!=NULL){
+      int len = strlen(tempBuffer);
+      if(write(fd[1], &len, sizeof(len))!=sizeof(len)){
+	perror("Errore nella scrittura buffer size\n");
+	exit(-1);
+      }
+      if(write(fd[1], tempBuffer, len)!=len){
+	perror("Errore nella trasmissione della stringa\n");
+      }
 	    }
     close(fd[1]);
     exit(0);
