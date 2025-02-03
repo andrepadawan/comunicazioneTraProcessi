@@ -31,11 +31,17 @@ int main(){
 	//Padre
       } else if(pid==0){
 	//Figlio 2
+	int len;
 	printf("Ciao! Sono figlio 2:\n");
         close(fd[1]);
 	printf("Leggo da figlio 1:\n");
-	while(read(fd[0], &c, sizeof(char))>0){
-	  printf("%c", toupper(c));
+	
+	while(read(fd[0], &len, sizeof(len))==sizeof(len)){
+	    int bytesRead = 0;
+	    for(int i = 0; i < len; i++){
+	      read(fd[0], &c, sizeof(c));
+	    printf("%c", toupper(c));
+		   }
 	    }
     close(fd[0]);
     exit(0);
@@ -45,8 +51,8 @@ int main(){
     wait(NULL);
     
   } else if(pid==0){
-    //FIGLIO 1
-    //Leggere righe da stdin e mandarle al padre
+    //FIGLIO 1 (producer)
+    //Leggere righe da stdin e mandarle al figlio 2 (consumer)
     //Chiudo la lettura, perché scrivo;
     char tempBuffer[SIZE];
     int len;
